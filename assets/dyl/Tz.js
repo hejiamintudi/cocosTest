@@ -5,9 +5,14 @@ var getNowTime = function () {
 
 // 空是里面执行 负数是循环次数 NaN是无限循环
 window.tz = function (node, ...argArr) {
+	let isDebug = false;
+	isDebug = true;
+	let debugStr = "";
+
 	let stopActArr = []; // {node： node， act： act};
 	let loopArr = []; // 循环数组 参数 fun
 	let isStop = -1; // true 代表暂停， false 代表运行中， -1 代表tz没有建立运行，还不能接受true跟false
+					// "del" 代表已经删除了，其他操作都没有意义了
 	
 	let once = function (fn) {
 		return fn; // 因为要循环运行，所以要多次触发，不需要一次性的函数了
@@ -24,14 +29,12 @@ window.tz = function (node, ...argArr) {
             return result;
         };
 	}
-	let isDebug = false;
-	// isDebug = true;
-	dylLog = function (arg) {
+	let dylLog = function (arg) {
 		if (cc.sys.isMobile || DylIsFinal) {
 			cc.log(arg);
 		}
 		else {
-			console.log("%c" + String(arg), "color:#fe8bd9;font-weight:bold;");
+			console.log("%c" + debugStr + String(arg), "color:#fe8bd9;font-weight:bold;");
 		}
 	}
 	// isDebug = true;
@@ -185,6 +188,9 @@ window.tz = function (node, ...argArr) {
 		let act = null;
 		if (typeof data === "string") { //转换为函数，丢给函数处理
 			let str = data;
+			if (debugStr === "") {
+				debugStr = str + " ";
+			}
 			data = function () {
 				cc.log(str);
 			}
@@ -243,9 +249,29 @@ window.tz = function (node, ...argArr) {
 		// 	runNum = -1;
 		// 	return run();
 		// }
+		if (arr[0] === null) { // 暂停并删除这些动作
+			if (isStop === -1) {
+				cc.warn("tz 还没有建立运行");
+				return proxy;
+			}
+			if (stopActArr.length === 0) {
+				// cc.warn("tz 这里没有要删除的动作表，是否都是函数？");
+				return proxy;
+			}
+			for (var i = stopActArr.length - 1; i >= 0; i--) {
+				stopActArr[i].node.stopAction(stopActArr[i].act);
+			}
+			isStop = "del";
+			return proxy;
+		}
+
 		if (typeof arr[0] === "boolean") {
 			if (isStop === -1) {
 				cc.warn("tz 还没有建立运行");
+				return proxy;
+			}
+			if (isStop === "del") {
+				cc.warn("tz 所有动作都删除了，没必要暂停和恢复了");
 				return proxy;
 			}
 			if (stopActArr.length === 0) {

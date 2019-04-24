@@ -4,39 +4,33 @@ cc.Class({
     },
 
     onLoad () {
-        let arr = [
-            1, "aa_1", "ee"    
-        ];
-        this.t = 0;
-        dyl.process(this, arr, true);
+    	this.touchArr1 = [...hjm._in1.getChildren()];
+    	this.touchArr2 = [...hjm._in2.getChildren()];
+    	this.node.button = [...hjm._button.getChildren()];
     },
 
-    aa_1 (end) {
-        cc.log("aa");
-        end(this, "bb");
-        end(this, "cc");
-        this.t++;
-        if (this.t > 3) {
-            end();
-            end(1);
-        }
-        else {
-            end(1);
-        }
+    touchOn (p) {
+    	cc.log("touchOn")
+    	let node = p.in(...this.touchArr1, ...this.touchArr2);
+    	if (node) {
+    		this.change(node);
+    	}
+    	return true;
     },
 
-    bb (end, arg) {
-        cc.log("bb", arg);
-        end();
+    buttonOn (node) {
+    	cc.log("buttonOn");
+    	this.change(node);
     },
 
-    cc (end, arg) {
-        cc.log("cc", arg);
-        end();
+    buttonEnd (node) {
+    	cc.log("buttonEnd");
+    	this.change(node);
     },
 
-    ee (end) {
-        cc.log("ee");
-        end();
+    change (node) {
+    	let color = node.color;
+    	node.color = cc.color(255 - color.r, 255, 255);
     },
+    
 });
